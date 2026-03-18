@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Электронная зачетка · Выставка журналистики</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            background: #e2f0ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            animation: pageFadeIn 0.8s ease-out;
+        }
+
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #app {
+            max-width: 1000px;
+            width: 100%;
+            background: #ffffff;
+            border: 8px solid #1e3a5f;
+            box-shadow: 0 10px 25px rgba(0, 40, 80, 0.3);
+            padding: 25px;
+            border-radius: 24px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        #app:hover {
+            box-shadow: 0 15px 35px rgba(0, 50, 100, 0.4);
+        }
+
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .logo {
+            width: 320px;
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        .logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(30, 58, 95, 0.2));
+            transition: transform 0.3s ease;
+        }
+
+        .logo img:hover {
+            transform: scale(1.03);
+        }
+
+        @keyframes logoFloat {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+
+        h1, h2, h3 {
+            font-weight: 600;
+            color: #1e3a5f;
+            border-bottom: 3px solid #7aa7d9;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        .screen {
+            display: none;
+            animation: screenFade 0.4s ease;
+        }
+
+        @keyframes screenFade {
+            from { opacity: 0.4; }
+            to { opacity: 1; }
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .annotation {
+            background: #f0f8ff;
+            padding: 20px;
+            border: 3px solid #2b5797;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            font-size: 1em;
+            line-height: 1.5;
+            box-shadow: inset 0 2px 5px rgba(0,30,70,0.1);
+            color: #102a44;
+        }
+
+        .annotation p {
+            margin-bottom: 10px;
+        }
+
+        .annotation ul {
+            margin-left: 25px;
+            margin-bottom: 10px;
+        }
+
+        .student-name {
+            font-size: 1.3em;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #d9e9ff;
+            padding: 12px 18px;
+            border-radius: 40px;
+            border: 2px solid #1e3a5f;
+        }
+
+        .student-name input {
+            flex: 1;
+            padding: 10px 15px;
+            font-size: 1em;
+            background: #ffffff;
+            border: 2px solid #7aa7d9;
+            border-radius: 30px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .student-name input:focus {
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 3px rgba(30,58,95,0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 10px rgba(0,30,70,0.2);
+        }
+
+        th, td {
+            border: 2px solid #b6d0e8;
+            padding: 15px 10px;
+            text-align: left;
+            vertical-align: middle;
+            background: #f4faff;
+        }
+
+        td:first-child, td:nth-child(3) {
+            font-weight: 600;
+            width: 35%;
+            background: #e4f0ff;
+        }
+
+        td:nth-child(2), td:nth-child(4) {
+            text-align: center;
+            width: 15%;
+            font-weight: 600;
+            color: #0b4770;
+            font-size: 1.1em;
+            background: #e4f0ff;
+        }
+
+        .subject-title {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-block;
+            color: #1e3a5f;
+        }
+
+        .subject-title:hover {
+            background: #c4dcff;
+            transform: scale(1.02) rotate(0.5deg);
+            animation: wobble 0.4s ease;
+        }
+
+        @keyframes wobble {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(1deg); }
+            75% { transform: rotate(-1deg); }
+        }
+
+        .subject-sub {
+            font-size: 0.85em;
+            font-weight: 400;
+            color: #2f5a8c;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .diploma-link {
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: 700;
+            padding: 20px;
+            background: #1e3a5f;
+            color: white;
+            border: 4px solid #7aa7d9;
+            border-radius: 50px;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .diploma-link:not(.disabled) {
+            animation: gentlePulse 2s infinite;
+        }
+
+        @keyframes gentlePulse {
+            0% { box-shadow: 0 0 0 0 rgba(30,58,95,0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(30,58,95,0); }
+            100% { box-shadow: 0 0 0 0 rgba(30,58,95,0); }
+        }
+
+        .diploma-link.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            background: #7a8faa;
+            animation: none;
+        }
+
+        .diploma-link:hover:not(.disabled) {
+            background: #2b5797;
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px #1e3a5f80;
+            animation: none;
+        }
+
+        .section-content {
+            background: #f4faff;
+            padding: 25px;
+            border: 4px solid #2b5797;
+            border-radius: 32px;
+            margin-bottom: 20px;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin: 20px 0 15px;
+            color: #0b2a4a;
+        }
+
+        .options {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .options li {
+            margin: 12px 0;
+            padding: 12px 18px;
+            background: #e1efff;
+            border: 2px solid #9bbde2;
+            border-radius: 40px;
+            transition: all 0.2s;
+        }
+
+        .options li:hover {
+            background: #c9e0ff;
+            border-color: #1e3a5f;
+            transform: translateX(8px);
+        }
+
+        .options input {
+            margin-right: 15px;
+            transform: scale(1.2);
+            accent-color: #1e3a5f;
+        }
+
+        button {
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-right: 15px;
+            box-shadow: 0 4px 0 #0b1f33;
+            transition: all 0.1s ease;
+            font-family: inherit;
+            border: 2px solid #7aa7d9;
+        }
+
+        button:hover {
+            background: #2b5797;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #0b1f33;
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #0b1f33;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #1e3a5f;
+            font-weight: 600;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* Стили для диплома (бумажный вид, центрирование) */
+        #diploma-screen h2 {
+            text-align: center;
+            border-bottom: none;
+            margin-bottom: 25px;
+        }
+
+        .diploma-text {
+            background: #fff9e6;
+            border: 2px solid #dae9f9;
+            border-radius: 20px;
+            padding: 40px 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2), inset 0 0 30px rgba(210,180,140,0.3);
+            font-size: 1.3em;
+            line-height: 1.8;
+            color: #2c1e0e;
+            text-align: center;
+            position: relative;
+            background-image: linear-gradient(145deg, #dae9f9 0%, #dae9f9 100%);
+            animation: diplomaAppear 0.8s ease-out;
+        }
+
+        @keyframes diplomaAppear {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .diploma-text::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.08"/></svg>');
+            pointer-events: none;
+            border-radius: 20px;
+        }
+
+        .diploma-name {
+            font-size: 1em;
+            font-weight: 800;
+            color: #1e3a5f;
+            background: linear-gradient(145deg, #dae9f9, #dae9f9);
+            padding: 0 15px;
+            border-radius: 40px;
+            display: inline-block;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin: 5px 0;
+        }
+
+        .diploma-specialization {
+            font-weight: 700;
+            color: #1e3a5f;
+            background: #dae9f9;
+            padding: 4px 20px;
+            border-radius: 40px;
+            border: 1px solid #dae9f9;
+            display: inline-block;
+            margin: 10px 0;
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            text-align: right;
+            color: #1e3a5f;
+            font-weight: 500;
+        }
+
+        #submit-answer {
+        background: #1e3a5f; 
+        border-color: #1e3a5f;
+        }
+
+        #submit-answer:hover {
+        background: #1e3a5f;
+        }
+
+        #back-to-main-from-section,
+        #back-to-main-from-diploma,
+        #back-to-main-from-final {
+        border-color: #1e3a5f;
+        background: #f4faff
+
+
+        }
+        #back-to-main-from-section:hover,
+        #back-to-main-from-diploma:hover,
+        #back-to-main-from-final:hover {
+        background: #f4faff;
+        }
+
+        #back-to-main-from-section,
+        #back-to-main-from-diploma,
+        #back-to-main-from-final {
+        color: #1e3a5f;
+        }
+       
+        /* Адаптация для мобильных устройств */
+        @media (max-width: 600px) {
+        body {
+        font-size: 12px; /* базовый размер шрифта для всех элементов */
+        }
+
+        #app {
+        padding: 10px;
+        border-width: 3px;
+        }
+
+        .logo {
+        width: 130px;
+        height: 130px;
+        margin-bottom: 10px;
+        }
+
+        h1, h2, h3 {
+        font-size: 1.3rem;
+        border-bottom-width: 2px;
+        }
+
+        .student-name {
+        font-size: 1rem;
+        padding: 6px 10px;
+        flex-wrap: wrap;
+        gap: 5px;
+        }
+
+        .student-name input {
+        padding: 5px 8px;
+        font-size: 0.85rem;
+        }
+
+        table {
+        font-size: 0.7rem; /* уменьшаем шрифт таблицы */
+        margin: 10px 0;
+        }
+
+        th, td {
+        padding: 6px 4px;
+        word-break: break-word; /* разрешаем перенос длинных слов */
+        line-height: 1.2;
+        }
+
+    /* уменьшаем подзаголовки в таблице */
+        .subject-sub {
+        font-size: 0.7em;
+        margin-top: 2px;
+        }
+
+        .diploma-link {
+        font-size: 1rem;
+        padding: 10px;
+        border-width: 3px;
+        }
+
+       .annotation {
+        padding: 12px;
+        font-size: 0.85rem;
+        border-width: 2px;
+       }
+
+       .section-content {
+        padding: 15px;
+       }
+
+       .options li {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+       }
+
+       button {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        margin-right: 8px;
+       }
+
+       .diploma-text {
+        padding: 20px 12px;
+        font-size: 1rem;
+       }
+
+    /* дополнительное уменьшение для очень маленьких экранов */
+       @media (max-width: 400px) {
+        body {
+            font-size: 11px;
+        }
+        .logo {
+            width: 100px;
+            height: 100px;
+        }
+        table {
+            font-size: 0.65rem;
+        }
+        td {
+            padding: 4px 2px;
+        }
+        .student-name {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .student-name span {
+            text-align: center;
+        }
+        .diploma-link {
+            font-size: 0.9rem;
+            padding: 8px;
+        }
+       }
+        }
+
+        
+    </style>
+</head>
+<body>
+<div id="app">
+    <!-- ШАПКА С ЛОГОТИПОМ ПО ЦЕНТРУ -->
+    <div class="header">
+        <div class="logo">
+            <img src="logo.png" alt="Логотип выставки" onerror="this.onerror=null; this.parentElement.innerHTML='';">
+        </div>
+    </div>
+
+    <!-- ГЛАВНЫЙ ЭКРАН (ЗАЧЕТКА) -->
+    <div id="main-screen" class="screen active">
+        <div class="annotation">
+            <p><strong>Привет, стажёр!</strong> Ты хочешь узнать, что такое профессия журналиста? Какую роль она играет в жизни общества? И как можно стать журналистом? Что ж, добро пожаловать на выставку «Ни дня без кадра и строчки: петербургская школа журналистики»!</p>
+            <p>Мы, преподаватели и сотрудники СПбГУ, которые создавали эту выставку, посвящённую 80-летию журналистского образования в нашем университете, приглашаем тебя на небольшую, но — искренне надеемся — интересную и полезную прогулку. Давай посмотрим, что тебя ждёт впереди. Ты сможешь...</p>
+            <ul>
+                <li>пройти сквозь время и заглянуть в историю журналистики и журналистского образования;</li>
+                <li>увидеть, как строится работа журналистов разных специализаций и какие есть вообще специализации;</li>
+                <li>самому немного попробовать себя в качестве журналиста благодаря нашим интерактивным зонам;</li>
+                <li>увидеть работы наших студентов и выпускников, которые давно стали звёздами журналистики;</li>
+                <li>узнать о современном состоянии журналистики и о том, что ждет её в будущем.</li>
+            </ul>
+            <p><strong>Маршрут</strong> движения по нашей выставке прост и понятен... (подробнее см. в буклете).</p>
+            <p><strong>Правила:</strong> открывай всё, листай всё, будь любопытным. А чтобы закрыть сессию, ответь на вопрос по каждому предмету. Получи диплом в конце!</p>
+        </div>
+
+        <div class="student-name">
+            <span>Зачетка</span>
+            <!-- Убрано value="Посетитель" -->
+            <input type="text" id="student-name-input" placeholder="Введите ваше имя">
+        </div>
+
+        <table id="gradebook-table">
+            <tr>
+                <td><span class="subject-title" data-section="1">История журналистики <span class="subject-sub">(Изменяющийся типаж журналиста)</span></span></td>
+                <td id="status-1">Зачет</td>
+                <td><span class="subject-title" data-section="2">Профессионально-творческая практика <span class="subject-sub">(Образ журналиста в искусстве)</span></span></td>
+                <td id="status-2">Зачет</td>
+            </tr>
+            <tr>
+                <td><span class="subject-title" data-section="3">Техника и технология современных СМИ <span class="subject-sub">(«Если звезды зажигают»)</span></span></td>
+                <td id="status-3">Зачет</td>
+                <td><span class="subject-title" data-section="4">Основы творческой деятельности журналиста <span class="subject-sub">(«В журналисты я б пошел, пусть меня научат»)</span></span></td>
+                <td id="status-4">Зачет</td>
+            </tr>
+            <tr>
+                <td><span class="subject-title" data-section="5">Введение в профессию <span class="subject-sub">(Молодая журналистика)</span></span></td>
+                <td id="status-5">Зачет</td>
+                <td><span class="subject-title" data-section="6">Профессиональное досье <span class="subject-sub">(Vivat Academia! Vivant professores!)</span></span></td>
+                <td id="status-6">Зачет</td>
+            </tr>
+        </table>
+
+        <div id="diploma-button" class="diploma-link disabled">
+            Диплом о сдачи сессии
+        </div>
+    </div>
+
+    <!-- ЭКРАН РАЗДЕЛА (ВОПРОС) -->
+    <div id="section-screen" class="screen">
+        <div class="section-content">
+            <h2 id="section-title"></h2>
+            <div id="section-annotation" class="annotation" style="margin-bottom: 20px;"></div>
+            <div class="question" id="section-question"></div>
+            <ul class="options" id="options-list"></ul>
+            <button id="submit-answer">Ответить</button>
+            <button id="back-to-main-from-section">На главную</button>
+        </div>
+    </div>
+
+    <!-- ЭКРАН ФИНАЛЬНОГО БЛОКА (БЛОК 7) -->
+    <div id="final-screen" class="screen">
+        <div class="section-content">
+            <h2>Финал</h2>
+            <div id="final-annotation" class="annotation"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="go-to-diploma-from-final">Получить диплом</button>
+                <button id="back-to-main-from-final">На главную</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН ДИПЛОМА (без печати, с новыми стилями) -->
+    <div id="diploma-screen" class="screen">
+        <h2>ДИПЛОМ</h2>
+        <div id="diploma-content" class="diploma-text">
+            <p>Настоящий диплом удостоверяет, что <span class="diploma-name" id="diploma-name">Посетитель</span> побывал(а) на выставке «Ни дня без кадра и строчки: петербургская школа журналистики», посвященной 80-летию журналистского образования в СПбГУ, и теперь знает, как непросто стать настоящим журналистом.</p>
+            <p>Поздравляем! Нас порадовали твои ответы на вопросы зачета! Из тебя получился бы отличный <span class="diploma-specialization" id="diploma-specialization">Журналист</span>!</p>
+            <p>Не забудь получить открытку со своей специализацией на выходе с выставки!</p>
+            <!-- Печать удалена -->
+        </div>
+        <div style="text-align: center;">
+            <button id="back-to-main-from-diploma">На главную</button>
+        </div>
+    </div>
+
+    <footer>© Выставка «Ни дня без кадра и строчки», СПбГУ</footer>
+</div>
+
+<script>
+    (function() {
+        // ---------- ДАННЫЕ РАЗДЕЛОВ (1..7) ----------
+        const sections = [
+            {
+                id: 1,
+                title: 'История журналистики',
+                subtitle: 'Изменяющийся типаж журналиста',
+                annotation: 'Здесь ты можешь увидеть, как изменилась журналистика со времени появления в России. Перед тобой указ Петра I об основании в 1702 году первой русской газеты «Ведомости», инфографика, показывающая историю развития журналистского образования, архивные газеты разных эпох и клятва студентов-первокурсников, поступивших на факультет журналистики Ленинградского государственного университета в 1969 году. Также ты можешь представить облик журналиста начала XX века и рабочее место журналиста советского периода. Обрати внимание на оборудование: фотоаппараты, проводной телефон, кинокамера, диктофон, микрофон, дальномер. Постой под звуковым душем, который воспроизводит мемуары журналистов разных эпох.',
+                question: 'Как ты считаешь, какой из представленных на выставке предметов стал атрибутом профессии журналиста раньше других?',
+                options: [
+                    'А) фотоаппарат «Смена-2»',
+                    'Б) кинокамера «Экран»',
+                    'В) печатная машинка «Москва»',
+                    'Г) цифровой диктофон «M-AUDIO»'
+                ]
+            },
+            {
+                id: 2,
+                title: 'Профессионально-творческая практика',
+                subtitle: 'Образ журналиста в искусстве',
+                annotation: 'В этом блоке мы собрали для тебя наиболее яркие и известные воплощения образа журналиста в кино, литературе и рекламе. Уверены, у тебя будет не один повод задуматься о том, насколько эти представления совпадают с реальной жизнью. На интерактивном стенде «Для меня журналист — это...» ты сможешь сам с помощью стикеров определить, каким требованиям именно по твоему мнению должен отвечать настоящий журналист. Читай, смотри, выбирай нужные качества, измерь свой рост на интеллектуальном ростомере и не забудь ответить на вопрос зачетки!',
+                question: 'Герой какой книги, по твоему мнению, наиболее точно воплощает образ журналиста?',
+                options: [
+                    'А) «Хорошие люди» Антона Чехова',
+                    'Б) «Тени исчезают в полдень» Анатолия Иванова',
+                    'В) «Компромисс» Сергея Довлатова',
+                    'Г) «Журналист» Андрея Константинова'
+                ]
+            },
+            {
+                id: 3,
+                title: 'Техника и технология современных СМИ',
+                subtitle: '«Если звезды зажигают»',
+                annotation: 'В этом разделе выставки ты можешь познакомиться с работами журналистов, студентов и выпускников СПбГУ, продолжающих традиции отечественной журналистики в XXI веке. Узнай, как они формируют актуальную медиаповестку, какие современные форматы используют и с какими трудностями сталкиваются в работе. Здесь представлены наиболее яркие проекты последнего времени: журналистские расследования, мультимедийные лонгриды, подкасты, видеоблоги, социальные кампании.',
+                question: 'Надеемся, ты посмотрел работы наших выпускников, работающих сейчас в СМИ, и в том числе увидел репортаж Салимы Зариф с борта брига «Россия» в честь Дня военно-морского флота. А какой бы материал по данному информационному поводу хотел бы сделать ты?',
+                options: [
+                    'А) Подкаст на основе интервью с живыми голосами участников событий',
+                    'Б) Расследовательский материал с фактчекингом и документами',
+                    'В) Визуальная история — серия выразительных фотографий с говорящими подписями',
+                    'Г) Постарался бы совместить несколько форматов для более полного освещения события'
+                ]
+            },
+            {
+                id: 4,
+                title: 'Основы творческой деятельности журналиста',
+                subtitle: '«В журналисты я б пошел, пусть меня научат»',
+                annotation: 'Следующий блок призван наглядно показать полезность профессионального образования в журналистской деятельности. Ты можешь не только прочитать высказывания преподавателей и студентов о ценности университетских курсов, но и сложить собственное мнение. Перед тобой — цветограмма учебных планов, материалы и книги, показывающие работу наших коллег, преподавателей, которые обеспечивают журналистское образование в Санкт-Петербургском государственном университете. Посмотри, чему учили на факультете журналистики 60 лет назад и на что делается акцент сейчас.',
+                question: 'Как ты думаешь, «лейка» — это атрибут какой специализации в журналистике?',
+                options: [
+                    'А) телекорреспондент',
+                    'Б) репортер',
+                    'В) радиоведущий',
+                    'Г) фотограф'
+                ]
+            },
+            {
+                id: 5,
+                title: 'Введение в профессию',
+                subtitle: 'Молодая журналистика',
+                annotation: 'Переходи в следующий зал, пройдя под аркой с историческими фотографиями, и убедись, что журналистика — это профессия вечно молодая. По крайней мере — постоянно обновляющаяся. История и традиции — это почва, которая позволяет расти новым поколениям талантливых журналистов. Материалы, собранные в третьем блоке нашей выставки, позволят тебе познакомиться с ближайшим будущим нашей профессии — со школьниками и студентами, только изучающими сейчас, что же такое журналистика. В данном разделе представлены их разнообразные работы, творческие проекты, учебные издания, а также собрана информация об объединениях (школах, кружках, секциях, детских лагерях и т.д.), в которых сейчас в Петербурге готовят юных журналистов.',
+                question: 'Представь, что ты создаешь собственный медиапроект. Что это будет?',
+                options: [
+                    'А) Серия репортажей об опасных темах',
+                    'Б) Фотопроект о городе и его жителях',
+                    'В) Аудиоподкаст с ярко выраженной авторской позицией',
+                    'Г) Полноценное мультимедийное СМИ с разными жанрами'
+                ]
+            },
+            {
+                id: 6,
+                title: 'Профессиональное досье',
+                subtitle: 'Vivat Academia! Vivant professores!',
+                annotation: 'Этот раздел познакомит тебя с историческими достижениями и современными успехами профессорско-преподавательского состава Института «Высшая школа журналистики и массовых коммуникаций» СПбГУ. Трудно переоценить вклад наших педагогов в формирование профессиональных кадров, и ты можешь сам убедиться в уникальности научно-образовательной школы журналистики, сложившейся за 80 лет в ЛГУ/СПбГУ. Ее достижения наглядно представлены соответствующей инфографикой, которая отражает как историю развития журналистского образования в СПбГУ, так и исследовательские достижения коллективов наших кафедр: географию связей научного и профессионального сотрудничества, научные премии сотрудников, планшеты с лицами преподавателей и выдающихся выпускников. Не проходи мимо интерактивной зоны «Стань звездой медиа».',
+                question: 'Перед тобой несколько работ медиаисследователей. Какой труд показался бы тебе самым ценным?',
+                options: [
+                    'А) Исследование возможностей медиавлияния на общественные процессы',
+                    'Б) Работа о методиках анализа и проверки фактов',
+                    'В) Монография об истории развития телевидения и цифровых платформ',
+                    'Г) Исследование авторского стиля известного журналиста'
+                ]
+            },
+            {
+                id: 7,
+                title: 'Финал',
+                subtitle: '',
+                annotation: 'Теперь мы с тобой возвращаемся в первый зал. Здесь, в седьмом и заключительном разделе выставки, собраны портреты выдающихся журналистов, вышедших из стен нашего факультета, представлена диаграмма, показывающая деятельность Института «Высшая школа журналистики и массовых коммуникаций» в цифрах статистики, дана интерактивная карта наших выпускников и перечислены наши основные достижения — в чём мы были первыми в России.\n\nМы надеемся, что, познакомившись с материалами и экспонатами выставки, ты убедился в главном — времена и технологии меняются, а качества, которые требуются от настоящего журналиста, остаются неизменными. Это верность профессии, умение оперативно добыть информацию, грамотно и правдиво донести ее до аудитории. Ценность журналистики для общества остается неизменной в любую эпоху — в прошлом, настоящем и будущем...\n\nЧто ж, теперь ты уже не стажёр, а человек, знающий, что такое настоящая журналистика. Не забудь заполнить и скачать файл своего диплома, а также получить на память открытку с рекомендацией — какая журналистская специализация тебе подходит больше всего.',
+                question: null,
+                options: []
+            }
+        ];
+
+        // СПЕЦИАЛИЗАЦИИ (латинские буквы A,B,C,D вместо А,Б,В,Г)
+        const specializations = [
+            { name: 'Репортер', required: {3: 'A', 4: 'A', 5: 'B'} },
+            { name: 'Телекорреспондент', required: {1: 'B', 5: 'A', 6: 'C'} },
+            { name: 'Радиоведущий', required: {1: 'D', 2: 'A', 3: 'C', 5: 'B'} },
+            { name: 'Журналист-расследователь', required: {2: 'B', 4: 'D', 6: 'B'} },
+            { name: 'Фотограф', required: {1: 'A', 2: 'C', 3: 'B', 5: 'D'} },
+            { name: 'Колумнист', required: {1: 'C', 4: 'C', 6: 'D'} },
+            { name: 'Редактор', required: {2: 'D', 3: 'D', 4: 'B', 6: 'A'} }
+        ];
+
+        let answers = {};          // { sectionId: 'A', ... } для разделов 1-6
+        let completed = {};        // { sectionId: true, ... } для разделов 1-6
+        let currentSectionId = 1;
+        let userName = '';         // теперь пустая строка
+
+        // Элементы DOM
+        const mainScreen = document.getElementById('main-screen');
+        const sectionScreen = document.getElementById('section-screen');
+        const finalScreen = document.getElementById('final-screen');
+        const diplomaScreen = document.getElementById('diploma-screen');
+
+        const studentNameInput = document.getElementById('student-name-input');
+        const diplomaButton = document.getElementById('diploma-button');
+
+        const sectionTitle = document.getElementById('section-title');
+        const sectionAnnotation = document.getElementById('section-annotation');
+        const sectionQuestion = document.getElementById('section-question');
+        const optionsList = document.getElementById('options-list');
+        const submitAnswerBtn = document.getElementById('submit-answer');
+        const backToMainFromSection = document.getElementById('back-to-main-from-section');
+        const backToMainFromDiploma = document.getElementById('back-to-main-from-diploma');
+
+        // Элементы финала
+        const finalAnnotation = document.getElementById('final-annotation');
+        const goToDiplomaFromFinal = document.getElementById('go-to-diploma-from-final');
+        const backToMainFromFinal = document.getElementById('back-to-main-from-final');
+
+        // Элементы диплома
+        const diplomaNameSpan = document.getElementById('diploma-name');
+        const diplomaSpecializationSpan = document.getElementById('diploma-specialization');
+
+        // ---------- Функции навигации ----------
+        function showMain() {
+            mainScreen.classList.add('active');
+            sectionScreen.classList.remove('active');
+            finalScreen.classList.remove('active');
+            diplomaScreen.classList.remove('active');
+            updateGradebookStatus();
+            updateDiplomaButton();
+        }
+
+        function showSection(sectionId) {
+            currentSectionId = sectionId;
+            const section = sections.find(s => s.id === sectionId);
+            if (!section) return;
+
+            sectionTitle.innerText = section.subtitle 
+                ? `${section.title} · ${section.subtitle}` 
+                : section.title;
+            sectionAnnotation.innerText = section.annotation;
+            sectionQuestion.innerText = section.question;
+
+            let html = '';
+            section.options.forEach((opt, index) => {
+                const letter = String.fromCharCode(65 + index);
+                const checked = (answers[sectionId] === letter) ? 'checked' : '';
+                html += `<li><label><input type="radio" name="answer" value="${letter}" ${checked}> ${opt}</label></li>`;
+            });
+            optionsList.innerHTML = html;
+
+            mainScreen.classList.remove('active');
+            sectionScreen.classList.add('active');
+            finalScreen.classList.remove('active');
+            diplomaScreen.classList.remove('active');
+        }
+
+        function showFinalBlock() {
+            const finalSection = sections.find(s => s.id === 7);
+            if (finalSection) {
+                finalAnnotation.innerText = finalSection.annotation;
+            }
+
+            mainScreen.classList.remove('active');
+            sectionScreen.classList.remove('active');
+            finalScreen.classList.add('active');
+            diplomaScreen.classList.remove('active');
+        }
+
+        function showDiploma() {
+            if (Object.keys(completed).length < 6) {
+                alert('Сначала ответьте на вопросы всех шести разделов!');
+                showMain();
+                return;
+            }
+
+            const name = userName || 'Посетитель'; // если поле пустое, подставляем "Посетитель"
+            const specialization = determineSpecialization(answers);
+            diplomaNameSpan.textContent = name;
+            diplomaSpecializationSpan.textContent = specialization;
+
+            mainScreen.classList.remove('active');
+            sectionScreen.classList.remove('active');
+            finalScreen.classList.remove('active');
+            diplomaScreen.classList.add('active');
+        }
+
+        // ---------- Определение специализации ----------
+        function determineSpecialization(answers) {
+            if (Object.keys(answers).length < 6) return 'Журналист (продолжайте отвечать)';
+
+            for (let spec of specializations) {
+                let match = true;
+                for (let [q, letter] of Object.entries(spec.required)) {
+                    if (answers[parseInt(q)] !== letter) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return spec.name;
+            }
+
+            let bestSpec = specializations[0].name;
+            let maxMatches = -1;
+            for (let spec of specializations) {
+                let matches = 0;
+                for (let [q, letter] of Object.entries(spec.required)) {
+                    if (answers[parseInt(q)] === letter) matches++;
+                }
+                if (matches > maxMatches) {
+                    maxMatches = matches;
+                    bestSpec = spec.name;
+                }
+            }
+            return bestSpec;
+        }
+
+        // ---------- Обновление статусов в таблице ----------
+        function updateGradebookStatus() {
+            for (let i = 1; i <= 6; i++) {
+                const cell = document.getElementById(`status-${i}`);
+                if (cell) {
+                    cell.innerText = completed[i] ? 'ЗАЧТЕНО' : 'Зачет';
+                    cell.style.color = completed[i] ? '#0f6b2b' : '#1e3a5f';
+                    cell.style.fontWeight = completed[i] ? 'bold' : 'normal';
+                }
+            }
+        }
+
+        function updateDiplomaButton() {
+            if (Object.keys(completed).length === 6) {
+                diplomaButton.classList.remove('disabled');
+            } else {
+                diplomaButton.classList.add('disabled');
+            }
+        }
+
+        // ---------- Сохранение ответа ----------
+        function saveAnswer() {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) {
+                alert('Выберите вариант ответа!');
+                return false;
+            }
+            const answer = selected.value;
+            answers[currentSectionId] = answer;
+            completed[currentSectionId] = true;
+            updateGradebookStatus();
+            updateDiplomaButton();
+            return true;
+        }
+
+        // ---------- Обработчики событий ----------
+        document.querySelectorAll('.subject-title').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const sectionId = parseInt(el.dataset.section);
+                showSection(sectionId);
+            });
+        });
+
+        submitAnswerBtn.addEventListener('click', () => {
+            if (saveAnswer()) {
+                showMain();
+            }
+        });
+
+        backToMainFromSection.addEventListener('click', showMain);
+        backToMainFromDiploma.addEventListener('click', showMain);
+        backToMainFromFinal.addEventListener('click', showMain);
+
+        diplomaButton.addEventListener('click', () => {
+            if (!diplomaButton.classList.contains('disabled')) {
+                showFinalBlock();
+            }
+        });
+
+        goToDiplomaFromFinal.addEventListener('click', showDiploma);
+
+        studentNameInput.addEventListener('input', (e) => {
+            userName = e.target.value.trim();
+        });
+
+        // Инициализация
+        completed = {};
+        answers = {};
+        updateGradebookStatus();
+        updateDiplomaButton();
+        showMain();
+    })();
+</script>
+</body>
+</html>
